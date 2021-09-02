@@ -8,3 +8,5 @@ An Easy Eye App
 ```cmd
 python detect.py
 ```
+
+:note: you will need a camera in oder to run normally.
