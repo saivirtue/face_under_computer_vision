@@ -3,6 +3,15 @@
 
 An Easy Eye App
 
+# Requirements
+
+```
+opencv-contrib-python
+imutils
+dlib
+scipy
+```
+
 # How to Run?
 
 ```cmd
