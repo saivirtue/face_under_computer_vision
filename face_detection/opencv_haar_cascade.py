@@ -1,18 +1,18 @@
 # 匯入必要套件
 import argparse
-
-import imutils
-from imutils.video import WebcamVideoStream
-import cv2
-import time
 import ntpath
 import os
+import time
+
+import cv2
+import imutils
+from imutils.video import WebcamVideoStream
 
 
 def main():
     # 初始化arguments
     ap = argparse.ArgumentParser()
-    ap.add_argument("-p", "--part", type=str, choices=["eye", "face"], default="eye", help="detect which part of face")
+    ap.add_argument("-p", "--part", type=str, choices=["eye", "face"], default="face", help="detect which part of face")
     args = vars(ap.parse_args())
 
     # 初始化Haar cascades函數
@@ -30,22 +30,27 @@ def main():
     print("Frames per second using cv2.CAP_PROP_FPS : {0}".format(fps))
 
     while True:
-        # 取得當前的frame，變更比例為寬500，並且轉成灰階圖片
+        # 取得當前的frame，變更比例為寬300，並且轉成灰階圖片
         frame = vs.read()
-        frame = imutils.resize(frame, width=500)
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        img = frame.copy()
+        img = imutils.resize(img, width=300)
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
         # 根據選擇的模型偵測
-        rects = detector.detectMultiScale(gray, scaleFactor=1.01, minNeighbors=5, minSize=(15, 15),
+        rects = detector.detectMultiScale(gray, scaleFactor=1.05, minNeighbors=5, minSize=(15, 15),
                                           flags=cv2.CASCADE_SCALE_IMAGE)
 
-        # 繪出偵測結果
-        for (x, y, w, h) in rects:
+        # 繪出偵測結果 (記得將偵測的座標轉回原本的frame大小)
+        ratio = frame.shape[1] / img.shape[1]
+        for rect in rects:
+            rect = rect * ratio
+            (x, y, w, h) = rect.astype("int")
             cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
         # 標示FPS
         end = time.time()
-        cv2.putText(frame, f"FPS: {str(int(1 / (end - start)))}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+        text = f"FPS: {str(int(1 / (end - start)))}"
+        cv2.putText(frame, text, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
         start = end
 
         # 顯示影像
