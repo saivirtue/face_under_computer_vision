@@ -34,13 +34,13 @@ def main():
     print("Frames per second using cv2.CAP_PROP_FPS : {0}".format(fps))
 
     while True:
-        # 取得當前的frame，變更比例為寬500，並且轉成灰階圖片
+        # 取得當前的frame
         frame = vs.read()
 
         # 取得frame的大小(高，寬)
         (h, w) = frame.shape[:2]
 
-        # 建立模型使用的Input資料blob
+        # 建立模型使用的Input資料blob (比例變更為300 x 300)
         blob = cv2.dnn.blobFromImage(cv2.resize(frame, (300, 300)), 1.0, (300, 300), (104.0, 177.0, 123.0))
 
         # 設定Input資料與取得模型預測結果
