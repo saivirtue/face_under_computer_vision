@@ -22,7 +22,7 @@ def main():
         with open(model_name, "wb") as new_file, open(model_name + ".bz2", "rb") as file:
             data = decompress(file.read())
             new_file.write(data)
-        remove(model_name)
+        remove(model_name + ".bz2")
 
     # 初始化模型
     detector = dlib.cnn_face_detection_model_v1(model_name)
