@@ -32,7 +32,6 @@ def main():
     # 偵測人臉
     rects = dect_haar.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=8, minSize=(50, 50))
     for rect in rects:
-        # rect = rect * (h / 300)
         (x, y, w, h) = rect.astype("int")
         cv2.rectangle(img, (x, y), (x + w, y + h), (255, 102, 255), 2)
         cv2.putText(img, "opencv_haar_cascade", (x, y - 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 102, 255), 2)

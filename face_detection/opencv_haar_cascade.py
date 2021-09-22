@@ -8,19 +8,28 @@ import cv2
 import imutils
 from imutils.video import WebcamVideoStream
 
+detectors = {
+    "eye": os.path.sep.join([ntpath.dirname(cv2.__file__), 'data', 'haarcascade_eye.xml']),
+    "face": os.path.sep.join([ntpath.dirname(cv2.__file__), 'data', 'haarcascade_frontalface_default.xml'])
+}
+
+
+# 定義人臉偵測函數方便重複使用
+def detect(img, part="face", scale_factor=1.1, min_neighbors=8, min_size=(50, 50)):
+    # 初始化Haar cascades函數
+    detector = cv2.CascadeClassifier(detectors[part])
+    # 根據選擇的模型偵測
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    rects = detector.detectMultiScale(gray, scaleFactor=scale_factor, minNeighbors=min_neighbors, minSize=min_size,
+                                      flags=cv2.CASCADE_SCALE_IMAGE)
+    return rects
+
 
 def main():
     # 初始化arguments
     ap = argparse.ArgumentParser()
     ap.add_argument("-p", "--part", type=str, choices=["eye", "face"], default="face", help="detect which part of face")
     args = vars(ap.parse_args())
-
-    # 初始化Haar cascades函數
-    detectors = {
-        "eye": os.path.sep.join([ntpath.dirname(cv2.__file__), 'data', 'haarcascade_eye.xml']),
-        "face": os.path.sep.join([ntpath.dirname(cv2.__file__), 'data', 'haarcascade_frontalface_default.xml'])
-    }
-    detector = cv2.CascadeClassifier(detectors[args["part"]])
 
     # 啟動WebCam
     vs = WebcamVideoStream().start()
@@ -34,11 +43,9 @@ def main():
         frame = vs.read()
         img = frame.copy()
         img = imutils.resize(img, width=300)
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-        # 根據選擇的模型偵測
-        rects = detector.detectMultiScale(gray, scaleFactor=1.05, minNeighbors=5, minSize=(15, 15),
-                                          flags=cv2.CASCADE_SCALE_IMAGE)
+        # 呼叫偵測函數，取得結果
+        rects = detect(img, args["part"], scale_factor=1.05, min_neighbors=5, min_size=(15, 15))
 
         # 繪出偵測結果 (記得將偵測的座標轉回原本的frame大小)
         ratio = frame.shape[1] / img.shape[1]
