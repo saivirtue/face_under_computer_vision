@@ -8,11 +8,20 @@ import numpy as np
 from imutils.face_utils import rect_to_bb
 from imutils.video import WebcamVideoStream
 
+# 初始化模型
+detector = dlib.get_frontal_face_detector()
+
+
+# 定義人臉偵測函數方便重複使用
+def detect(img):
+    rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    # 偵測人臉，將辨識結果轉為(x, y, w, h)的bounding box
+    results = detector(rgb, 0)
+    rects = [rect_to_bb(rect) for rect in results]
+    return rects
+
 
 def main():
-    # 初始化模型
-    detector = dlib.get_frontal_face_detector()
-
     # 啟動WebCam
     vs = WebcamVideoStream().start()
     time.sleep(2.0)
@@ -25,19 +34,17 @@ def main():
         frame = vs.read()
         img = frame.copy()
         img = imutils.resize(img, width=300)
-        rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
         # 取得frame的大小(高，寬)
         ratio = frame.shape[1] / img.shape[1]
 
-        # 偵測人臉，將辨識結果轉為(x, y, w, h)的bounding box
-        rects = detector(rgb, 0)
-        boxes = [rect_to_bb(rect) for rect in rects]
+        # 呼叫偵測函數，取得結果
+        rects = detect(img)
 
         # loop所有預測結果
-        for box in boxes:
+        for rect in rects:
             # 計算bounding box(邊界框)與準確率 - 取得(左上X，左上Y，右下X，右下Y)的值 (記得轉換回原始frame的大小)
-            box = np.array(box) * ratio
+            box = np.array(rect) * ratio
             (x, y, w, h) = box.astype("int")
 
             # 畫出邊界框
