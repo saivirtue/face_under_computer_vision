@@ -1,24 +1,25 @@
 import ntpath
 import sys
-
 # resolve module import error in PyCharm
 sys.path.append(ntpath.dirname(ntpath.dirname(ntpath.abspath(__file__))))
 
 # 匯入必要套件
-from sklearn.preprocessing import LabelEncoder
-from sklearn.decomposition import PCA
-from sklearn.svm import SVC
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import classification_report
-from skimage.exposure import rescale_intensity
-from dataset.load_dataset import images_to_faces
-from imutils import build_montages
-import numpy as np
 import argparse
-import imutils
 import time
+
 import cv2
+import imutils
+import numpy as np
+from imutils import build_montages
 from matplotlib import pyplot as plt
+from skimage.exposure import rescale_intensity
+from sklearn.decomposition import PCA
+from sklearn.metrics import classification_report
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
+from sklearn.svm import SVC
+
+from dataset.load_dataset import images_to_faces
 
 
 def main():
@@ -46,7 +47,7 @@ def main():
     print("[INFO] creating eigenfaces...")
     pca = PCA(svd_solver="randomized", n_components=args["components"], whiten=True)
     start = time.time()
-    trainX = pca.fit_transform(trainX)
+    pca_trainX = pca.fit_transform(trainX)
     end = time.time()
     print(f"[INFO] computing eigenfaces for {round(end - start, 2)} seconds")
 
@@ -55,7 +56,8 @@ def main():
     plt.plot(cum_ratio)
     plt.xlabel("number of components")
     plt.ylabel("cumulative explained variance")
-    plt.show()
+    plt.draw()
+    plt.waitforbuttonpress(0)
 
     # 來用"圖像"看一下PCA的結果
     vis_images = []
@@ -77,11 +79,21 @@ def main():
 
     # 建立SVM模型來訓練
     model = SVC(kernel="rbf", C=10.0, gamma=0.001, random_state=9527)
-    model.fit(trainX, trainY)
+    model.fit(pca_trainX, trainY)
 
     # 驗證模型的準確度 (記得將測試資料轉成PCA的格式)
-    predictions = model.predict(pca.transform(testX))
+    pca_testX = pca.transform(testX)
+    predictions = model.predict(pca_testX)
     print(classification_report(testY, predictions, target_names=le.classes_))
+
+    # Optional: 你也可以直接用OpenCV內建的模型來訓練；下面的程式碼可以取代前面的SVM模型訓練
+    # recognizer = cv2.face_EigenFaceRecognizer().create(num_components=args["components"])
+    # recognizer.train(trainX, trainY)
+    # predictions = []
+    # for i in range(0, len(testX)):
+    #     (prediction, _) = recognizer.predict(testX[i])
+    #     predictions.append(prediction)
+    # print(classification_report(testY, predictions, target_names=le.classes_))
 
     # 隨機挑選測試資料來看結果
     idxs = np.random.choice(range(0, len(testY)), size=10, replace=False)
@@ -98,6 +110,7 @@ def main():
         print(f"[INFO] prediction: {predName}, actual: {actualName}")
         cv2.imshow("Face", face)
         cv2.waitKey(0)
+    plt.close()
 
 
 if __name__ == '__main__':
