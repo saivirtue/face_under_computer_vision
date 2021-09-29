@@ -77,7 +77,7 @@ def main():
         frame = vs.read()
 
         img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        boxes = face_recognition.face_locations(img, model="cnn")
+        boxes = face_recognition.face_locations(img, model="cnn" if args["detection_method"] == "mmod" else "hog")
         embeddings = face_recognition.face_encodings(img, boxes)
 
         # 辨識結果
