@@ -130,3 +130,10 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# custom
+triplet_loss
+kivy_*
+*.caffemodel
+*.dat
+*.h5
