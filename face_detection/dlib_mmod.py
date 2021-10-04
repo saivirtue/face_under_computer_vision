@@ -27,13 +27,13 @@ detector = dlib.cnn_face_detection_model_v1(model_name)
 
 
 # 定義人臉偵測函數方便重複使用
-def detect(img):
+def detect(img, return_ori_result=False):
     rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
     # 偵測人臉，將辨識結果轉為(x, y, w, h)的bounding box
     results = detector(rgb, 0)
     rects = [rect_to_bb(r.rect) for r in results]
-    return rects
+    return [r.rect for r in results] if return_ori_result else rects
 
 
 def main():

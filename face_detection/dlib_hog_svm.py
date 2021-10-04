@@ -13,12 +13,11 @@ detector = dlib.get_frontal_face_detector()
 
 
 # 定義人臉偵測函數方便重複使用
-def detect(img):
-    rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+def detect(img, return_ori_result=False):
     # 偵測人臉，將辨識結果轉為(x, y, w, h)的bounding box
-    results = detector(rgb, 0)
+    results = detector(img, 0)
     rects = [rect_to_bb(rect) for rect in results]
-    return rects
+    return results if return_ori_result else rects
 
 
 def main():
