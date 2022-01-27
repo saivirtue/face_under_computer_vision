@@ -11,7 +11,6 @@ from imutils.video import WebcamVideoStream
 prototxt = "deploy.prototxt"
 caffemodel = "res10_300x300_ssd_iter_140000.caffemodel"
 
-
 # 下載模型相關檔案
 if not exists(prototxt) or not exists(caffemodel):
     urlretrieve(f"https://raw.githubusercontent.com/opencv/opencv/master/samples/dnn/face_detector/{prototxt}",
@@ -59,7 +58,31 @@ def main():
     # 初始化arguments
     ap = argparse.ArgumentParser()
     ap.add_argument("-c", "--confidence", type=float, default=0.5, help="minimum probability to filter detecteions")
+    ap.add_argument("-i", "--image", required=False, help="use image instead of webcam")
     args = vars(ap.parse_args())
+
+    if args["image"]:
+        img_path = args["image"]
+        img = cv2.imread(img_path)
+        rects = detect(img, args["confidence"])
+
+        # loop所有預測結果
+        for rect in rects:
+            (x, y, w, h) = rect["box"]
+            confidence = rect["confidence"]
+
+            # 畫出邊界框
+            cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 2)
+
+            # 畫出準確率
+            text = f"{round(confidence * 100, 2)}%"
+            y = y - 10 if y - 10 > 10 else y + 10
+            cv2.putText(img, text, (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 0, 255), 2)
+
+        # 顯示影像
+        cv2.imshow("Image", img)
+        cv2.waitKey()
+        exit(0)
 
     # 啟動WebCam
     vs = WebcamVideoStream().start()
